@@ -88,6 +88,11 @@ glm::ivec2 screenSize;
 float rotation;
 int lastTime;
 
+unsigned int depthFBO;
+unsigned int thicknessFBO;
+unsigned int depthTexture;
+unsigned int thicknessTexture;
+
 void checkShaderErrors(GLuint shaderId, const std::string &filename)
 {
 	GLint status;
@@ -126,6 +131,8 @@ void init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glDebugMessageCallback(MessageCallback, 0);
 	glClearColor(0,0,0, 1.0f);
 
@@ -183,7 +190,31 @@ void init()
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 		glEnable(GL_DEBUG_OUTPUT);
 	}
+	glGenFramebuffers(1, &depthFBO);
+	glGenFramebuffers(1, &thicknessFBO);
 
+	glGenTextures(1, &depthTexture);
+	glBindTexture(GL_TEXTURE_2D, depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0,GL_R32F, screenSize.x, screenSize.y, 0,GL_RED, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// attach it to currently bound framebuffer object
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, depthTexture, 0);
+
+	// todo test if this can go 
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	rotation = 0;
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
@@ -204,15 +235,17 @@ void display()
 	model = glm::rotate(model, rotation, glm::vec3(0, 1, 0));//roteer het object een beetje
 	glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(view* model)));
 
+	// last shader
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	myShader->setActive();
-
 	auto setMatrixUniforms = [&]() {
 		glUniformMatrix4fv(myShader->getUniform("modView"), 1, 0, glm::value_ptr( view* model));//en zet de matrix in opengl
 		glUniformMatrix4fv(myShader->getUniform("Proj"), 1, 0, glm::value_ptr(projection));//en zet de matrix in opengl
 		glUniformMatrix3fv(myShader->getUniform("normal"), 1, 0, glm::value_ptr(normalMatrix));//en zet de matrix in opengl
 	};
-
 	setMatrixUniforms();
+
+	//end shader
 	myShader->uniformSetter = [&]() {
 
 		// object params
