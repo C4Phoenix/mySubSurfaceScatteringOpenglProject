@@ -76,5 +76,11 @@
     <None Include="assets\shaders\simple.frag">
       <Filter>assets\shaders</Filter>
     </None>
+    <None Include="assets\shaders\DepthMap.frag">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\DepthMap.vert">
+      <Filter>assets\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

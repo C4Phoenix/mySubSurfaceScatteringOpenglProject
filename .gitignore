@@ -690,3 +690,6 @@ MigrationBackup/
 
 # End of https://www.gitignore.io/api/visualstudio
 
+/out/build/x64-Debug/CMakeFiles
+/out/build/x64-Debug/.cmake/api/v1
+/out/build/x64-Debug

@@ -90,6 +90,8 @@
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\shaders\DepthMap.frag" />
+    <None Include="assets\shaders\DepthMap.vert" />
     <None Include="assets\shaders\multitex.fs" />
     <None Include="assets\shaders\multitex.vs" />
     <None Include="assets\shaders\My_subsurface_scattering.frag" />

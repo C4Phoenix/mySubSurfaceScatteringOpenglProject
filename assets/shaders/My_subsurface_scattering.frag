@@ -19,6 +19,8 @@ uniform vec3 [20]vLightLocation;
 uniform float [20]fLTattenuation;
 uniform vec4 [20]vLTColour;
 
+uniform sampler2D SSOT;
+
 // Input variables
 in vec2 FragTexcoord;
 in vec3 FragNormal;
@@ -120,12 +122,13 @@ void main(void)
   vec3 vNormal = normalize(FragNormal);
   vec4 C = FragColor;
   vec3 vViewDirection = normalize(vViewDirection);normalize(vEye);
-  
   //float fLThickness = length( texture2D(DepthTex, FragTexcoord));//0.2 added for more light to go thru (bad thickness texture)
   
-  //vec4 vSSOT = texture2D(SSOT, gl_FragCoord.xy / vWindowWidth);
-  float fLThickness =.8;// vSSOT.x;
-
+  vec4 vSSOT = texture2D(SSOT, gl_FragCoord.xy / vWindowWidth);
+  //float fLThickness =.8;
+  float fLThickness = vSSOT.x;
+  //debugFlaot =fLThickness;
+  /*
   // subsurface distortion. shifts the suface normal. breaks continuity.
   float fLightDistortion = cnoise(FragTexcoord*800)*.05 ;
   // ambient light
@@ -160,5 +163,7 @@ void main(void)
   }
   
   OutputColor = vec4( fLight * C.xyz,1);
- // OutputColor = vec4(vec3(1,1,1)* debugFlaot,1);
+  */
+  OutputColor = vec4(vec3(1,1,1)* debugFlaot,1);
+  OutputColor = vSSOT;
 }
