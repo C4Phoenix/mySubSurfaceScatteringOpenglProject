@@ -29,7 +29,6 @@ in vec3 FragInputPosition;
 
 // Output variables
 out vec4 OutputColor;
-out vec4 debug;
 
 float saturate(float x){ return clamp(x, 0.0, 1.0);}
 
@@ -124,10 +123,11 @@ void main(void)
   vec3 vViewDirection = normalize(vViewDirection);normalize(vEye);
   //float fLThickness = length( texture2D(DepthTex, FragTexcoord));//0.2 added for more light to go thru (bad thickness texture)
   
-  vec4 vSSOT = texture2D(SSOT, gl_FragCoord.xy / vWindowWidth);
+  vec2 texcoord = gl_FragCoord.xy / vWindowWidth;
+  vec4 vSSOT = texture(SSOT, texcoord);
   //float fLThickness =.8;
   float fLThickness = vSSOT.x;
-  //debugFlaot =fLThickness;
+  debugFlaot =fLThickness;
   /*
   // subsurface distortion. shifts the suface normal. breaks continuity.
   float fLightDistortion = cnoise(FragTexcoord*800)*.05 ;
@@ -165,5 +165,4 @@ void main(void)
   OutputColor = vec4( fLight * C.xyz,1);
   */
   OutputColor = vec4(vec3(1,1,1)* debugFlaot,1);
-  OutputColor = vSSOT;
 }

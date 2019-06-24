@@ -287,7 +287,7 @@ void display()
 
 	// last shader
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	subSurfaceScatteringShader->setActive();
 	setMatrixUniforms();
@@ -307,6 +307,7 @@ void display()
 		glUniform3f(subSurfaceScatteringShader->getUniform("vEye"), eye.x, eye.y, eye.z);
 
 		glUniform1i(subSurfaceScatteringShader->getUniform("SSOT"), depthTexture);
+		checkGlErrors();
 
 		// light params
 		glUniform1f(subSurfaceScatteringShader->getUniform("fAmbientScale"), 0.0);// ambient light intensity 0.0 to 1.0

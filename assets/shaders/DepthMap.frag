@@ -17,5 +17,7 @@ void main(void)
   //float depth =1/clamp(length(FragInputPosition - vEyePos), fNear,fFar);
   float depth = (gl_FragCoord.z / gl_FragCoord.w) / 10;
   //OutputColor = vec4(vec3(1,1,1) * depth,1);
-  depthBuffer = depth;
+  //depthBuffer = depth;
+  depthBuffer = 1;
+
 }
