@@ -221,16 +221,25 @@ void setBuffers()
 	glGenTextures(1, &depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
 	//glTexImage2D(GL_TEXTURE_2D, 0,GL_R32F, screenSize.x, screenSize.y, 0,GL_RED, GL_UNSIGNED_BYTE, NULL);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, screenSize.x, screenSize.y, 0, GL_RED, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, screenSize.x, screenSize.y, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	checkGlErrors();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	checkGlErrors();
 	glBindTexture(GL_TEXTURE_2D, 0);// reset to texture 0
 
 	// make frame buffer source of texture contents
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, depthTexture, 0);
 	checkGlErrors();
+
+	// assing place for depth buffer to be calculated otherwise cannot be pulled
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 	// second pass buffer
 	glGenFramebuffers(1, &thicknessFBO);
@@ -246,14 +255,9 @@ void setBuffers()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, thicknessTexture, 0);
 
 	// assing place for depth buffer to be calculated otherwise cannot be pulled
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-	auto bufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	checkGlErrors();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -293,8 +297,9 @@ void display()
 	setMatrixUniforms();
 
 	checkGlErrors();
+	glActiveTexture(depthTexture);
+	checkGlErrors();
 	subSurfaceScatteringShader->uniformSetter = [&]() {
-
 		// object params
 		glUniform1f(subSurfaceScatteringShader->getUniform("fLTScale"), 0.5);// how hard the light scales with elimination drop off from distance. 0.0 to 4 is acceptable
 		glUniform1i(subSurfaceScatteringShader->getUniform("iLTPower"), 2);// defuse directionality. 0 lights up hole model 40 only part between light and eye
